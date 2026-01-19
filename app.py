@@ -14,10 +14,10 @@ import koreanize_matplotlib
 import os
 from dotenv import load_dotenv
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 load_dotenv()
-my_name = os.getenv("MY_NAME")
-st.header(my_name)
+
 def get_krx_company_list() -> pd.DataFrame:
     try:
         url = 'http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13'
@@ -83,14 +83,22 @@ if confirm_btn:
                 # st.pyplot(fig)
 
                 # Plotly 시각화
-                fig = go.Figure(data=[go.Candlestick(x=price_df.index,
-                open=price_df['Open'],
-                high=price_df['High'],
-                low=price_df['Low'],
-                close=price_df['Close'])])
+                fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
+                                    vertical_spacing=0.03, subplot_titles=('OHLC', 'Volume'),
+                                    row_width=[0.2, 0.7])
 
-                fig.show()
-                
+                # Plot OHLC on 1st row
+                fig.add_trace(go.Candlestick(x=price_df.index, open=price_df["Open"], high=price_df["High"],
+                                low=price_df["Low"], close=price_df["Close"], name="OHLC"), 
+                                row=1, col=1
+                )
+
+                # Bar trace for volumes on 2nd row without legend
+                fig.add_trace(go.Bar(x=price_df.index, y=price_df['Volume'], showlegend=False), row=2, col=1)
+
+                # Do not show OHLC's rangeslider plot 
+                fig.update(layout_xaxis_rangeslider_visible=False)
+                fig
 
                 # 엑셀 다운로드 기능
                 output = BytesIO()
