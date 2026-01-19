@@ -18,6 +18,7 @@ from plotly.subplots import make_subplots
 
 load_dotenv()
 
+@st.cache_data
 def get_krx_company_list() -> pd.DataFrame:
     try:
         url = 'http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13'
