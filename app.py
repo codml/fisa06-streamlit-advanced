@@ -84,12 +84,13 @@ if confirm_btn:
 
                 # Plotly 시각화
                 fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
-                                    vertical_spacing=0.03, subplot_titles=('OHLC', 'Volume'),
+                                    vertical_spacing=0.1,
                                     row_width=[0.2, 0.7])
 
                 # Plot OHLC on 1st row
                 fig.add_trace(go.Candlestick(x=price_df.index, open=price_df["Open"], high=price_df["High"],
-                                low=price_df["Low"], close=price_df["Close"], name="OHLC"), 
+                                low=price_df["Low"], close=price_df["Close"], name="OHLCV",
+                                increasing={'line': {'color': 'red'}}, decreasing={'line': {'color': 'blue'}}), 
                                 row=1, col=1
                 )
 
