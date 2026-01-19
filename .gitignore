@@ -1,0 +1,4 @@
+st_adv/
+*.txt
+.env
+!requirements.txt
