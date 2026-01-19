@@ -89,18 +89,89 @@ if confirm_btn:
 
                 # Plot OHLC on 1st row
                 fig.add_trace(go.Candlestick(x=price_df.index, open=price_df["Open"], high=price_df["High"],
-                                low=price_df["Low"], close=price_df["Close"], name="OHLCV",
+                                low=price_df["Low"], close=price_df["Close"], name="OHLC",
                                 increasing={'line': {'color': 'red'}}, decreasing={'line': {'color': 'blue'}}), 
                                 row=1, col=1
                 )
 
                 # Bar trace for volumes on 2nd row without legend
                 fig.add_trace(go.Bar(x=price_df.index, y=price_df['Volume'], showlegend=False), row=2, col=1)
-
+                for n in [5,20,120]:
+                    price_df[f'{n}MA'] = price_df['Close'].rolling(window=n).mean()
+                    fig.add_trace(go.Scatter(x=price_df.index, y=price_df[f'{n}MA'], 
+                             line=dict(width=2), 
+                             name=f'{n}일 이동평균선'))
                 # Do not show OHLC's rangeslider plot 
                 fig.update(layout_xaxis_rangeslider_visible=False)
-                fig
+                st.plotly_chart(fig, width='stretch')
 
+                # 수익률 계산
+                price_df['Daily_Return'] = price_df['Close'].pct_change() * 100
+                price_df.dropna(inplace=True)
+
+                # 통계치 계산
+                mean_return = price_df['Daily_Return'].mean()
+                std_return = price_df['Daily_Return'].std()
+
+                # 2. Plotly로 시각화
+                fig = go.Figure()
+
+                # (1) 히스토그램 추가
+                fig.add_trace(go.Histogram(
+                    x=price_df['Daily_Return'], # price_df 사용
+                    histnorm='', 
+                    name='Daily Return',
+                    marker_color='skyblue',
+                    opacity=0.75,
+                    xbins=dict(
+                        start=price_df['Daily_Return'].min(), # price_df 사용
+                        end=price_df['Daily_Return'].max(),   # price_df 사용
+                        size=0.5 
+                    )
+                ))
+
+                # (2) 평균선 추가 (빨간 점선)
+                fig.add_vline(
+                    x=mean_return, 
+                    line_width=3, 
+                    line_dash="dash", 
+                    line_color="red", 
+                    annotation_text=f"Mean: {mean_return:.2f}%", 
+                    annotation_position="top right"
+                )
+
+                # (3) 표준편차 범위 추가 (초록 점선)
+                fig.add_vline(
+                    x=mean_return + 3*std_return, 
+                    line_width=2, 
+                    line_dash="dot", 
+                    line_color="green", 
+                    annotation_text="+3 Std",
+                    annotation_position="top right"
+                )
+
+                fig.add_vline(
+                    x=mean_return - 3*std_return, 
+                    line_width=2, 
+                    line_dash="dot", 
+                    line_color="green", 
+                    annotation_text="-3 Std",
+                    annotation_position="top left"
+                )
+
+                # (4) 레이아웃 꾸미기
+                fig.update_layout(
+                    title='<b>Daily Return Distribution Histogram</b>',
+                    xaxis_title='Daily Return (%)',
+                    yaxis_title='Frequency (Count)',
+                    bargap=0.05,
+                    template='plotly_white',
+                    width=900,
+                    height=600
+                )
+
+                # 차트 출력
+                st.plotly_chart(fig, width='stretch')
                 # 엑셀 다운로드 기능
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine='openpyxl') as writer:
