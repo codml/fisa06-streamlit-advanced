@@ -13,6 +13,7 @@ import koreanize_matplotlib
 
 import os
 from dotenv import load_dotenv
+import plotly.graph_objects as go
 
 load_dotenv()
 my_name = os.getenv("MY_NAME")
@@ -75,11 +76,21 @@ if confirm_btn:
                 st.subheader(f"[{company_name}] 주가 데이터")
                 st.dataframe(price_df.tail(10), width="stretch")
 
-                # Matplotlib 시각화
-                fig, ax = plt.subplots(figsize=(12, 5))
-                price_df['Close'].plot(ax=ax, grid=True, color='red')
-                ax.set_title(f"{company_name} 종가 추이", fontsize=15)
-                st.pyplot(fig)
+                # matplotlib 시각화
+                # fig, ax = plt.subplots(figsize=(12, 5))
+                # price_df['Close'].plot(ax=ax, grid=True, color='red')
+                # ax.set_title(f"{company_name} 종가 추이", fontsize=15)
+                # st.pyplot(fig)
+
+                # Plotly 시각화
+                fig = go.Figure(data=[go.Candlestick(x=price_df.index,
+                open=price_df['Open'],
+                high=price_df['High'],
+                low=price_df['Low'],
+                close=price_df['Close'])])
+
+                fig.show()
+                
 
                 # 엑셀 다운로드 기능
                 output = BytesIO()
